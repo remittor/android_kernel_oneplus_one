@@ -15,8 +15,14 @@
 
 &pm8941_lsid1 {
 	pm8941_boost: regulator@a000 {
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
+/* #ifndef VENDOR_EDIT*/	
+/* xiaojun.lv@PhoneDpt.AudioDrv, 2014/03/25, modify pm8941_boost from 5V to 4.5V for 14001 */
+		//regulator-min-microvolt = <5000000>;
+		//regulator-max-microvolt = <5000000>;
+/* #else */
+		regulator-min-microvolt = <4500000>;
+		regulator-max-microvolt = <4500000>;
+/* #endif */
 		qcom,enable-time = <500>;
 		status = "okay";
 	};
@@ -68,7 +74,12 @@
 			regulator-name = "8841_s1_ao";
 			qcom,set = <1>;
 			regulator-min-microvolt = <675000>;
-			regulator-max-microvolt = <1050000>;
+/*#ifdef CONFIG_VENDOR_EDIT*/
+/* shu.liu@Onlinerd.Driver, 2014/05/28  Add for increase L2 voltage 50mv for solving reboot random */
+			regulator-max-microvolt = <1050000>;  
+/*#else*/
+/*			regulator-max-microvolt = <1100000>;*/
+/*#endif*/
 			status = "okay";
 			compatible = "qcom,rpm-regulator-smd";
 		};
@@ -76,7 +87,13 @@
 			regulator-name = "8841_s1_so";
 			qcom,set = <2>;
 			regulator-min-microvolt = <675000>;
-			regulator-max-microvolt = <1050000>;
+/*#ifndef CONFIG_VENDOR_EDIT*/
+/* shu.liu@Onlinerd.Driver, 2014/05/28  Add for increase L2 voltage 50mv for solving reboot random */
+/*			regulator-max-microvolt = <1050000>;  */
+/*#else*/
+			regulator-max-microvolt = <1100000>;
+/*#endif*/
+
 			qcom,init-voltage = <675000>;
 			status = "okay";
 			compatible = "qcom,rpm-regulator-smd";
@@ -208,9 +225,11 @@
 	rpm-regulator-ldoa3 {
 		status = "okay";
 		pm8941_l3: regulator-l3 {
-			regulator-min-microvolt = <1225000>;
+			/*regulator-min-microvolt = <1225000>;*/  /*oppo leihui 2013-11-04 modify*/
+			regulator-min-microvolt = <1000000>;
 			regulator-max-microvolt = <1225000>;
-			qcom,init-voltage = <1225000>;
+			/*qcom,init-voltage = <1225000>;*/      /*oppo leihui 2013-11-04 modify*/
+			qcom,init-voltage = <1000000>;
 			status = "okay";
 		};
 	};
@@ -355,9 +374,11 @@
 	rpm-regulator-ldoa17 {
 		status = "okay";
 		pm8941_l17: regulator-l17 {
-			regulator-min-microvolt = <2850000>;
+			/*regulator-min-microvolt = <2850000>;*/ /*oppo leihui 2013-11-06 modify*/
+			regulator-min-microvolt = <2700000>;
 			regulator-max-microvolt = <2850000>;
-			qcom,init-voltage = <2850000>;
+			/*qcom,init-voltage = <2850000>;*/   /*oppo leihui 2013-11-06 modify*/
+			qcom,init-voltage = <2700000>;
 			status = "okay";
 		};
 	};
@@ -415,9 +436,11 @@
 	rpm-regulator-ldoa23 {
 		status = "okay";
 		pm8941_l23: regulator-l23 {
-			regulator-min-microvolt = <3000000>;
+			/*regulator-min-microvolt = <3000000>;*/  /*oppo leihui 2013-11-06 modify*/
+            regulator-min-microvolt = <2800000>;			
 			regulator-max-microvolt = <3000000>;
-			qcom,init-voltage = <3000000>;
+			/*qcom,init-voltage = <3000000>;*/	/*oppo leihui 2013-11-06 modify*/
+			qcom,init-voltage = <2800000>;
 			status = "okay";
 		};
 	};

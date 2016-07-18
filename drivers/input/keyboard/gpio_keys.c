@@ -336,6 +336,13 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 			input_event(input, type, button->code, button->value);
 	} else {
 		input_event(input, type, button->code, !!state);
+/* OPPO 2014-05-08 zhengzk Add begin for hall sensor debug */
+#ifdef VENDOR_EDIT
+		if(type == 5){
+			printk("hall driver report event:type=%d, state=%d\n", type, state);
+		}
+#endif
+/* OPPO 2014-05-08 zhengzk Add end */
 	}
 	input_sync(input);
 }
@@ -635,6 +642,15 @@ static int gpio_keys_get_devtree_pdata(struct device *dev,
 
 #endif
 
+#ifndef CONFIG_OPPO_DEVICE_FIND7OP
+/*OPPO yuyi 2014-04-02 add begin for adding lock for vol_button,delete for oneplus*/
+#ifndef VENDOR_EDIT
+	/*mingqiang.guo@phone.bsp  2014-5-14 delete for remove track gestures, reduce power consumption*/
+	#include <linux/wakelock.h>
+	struct wake_lock        wake_lock_sensor;
+#endif/*VENDOR_EDIT*/
+#endif/*CONFIG_OPPO_DEVICE_FIND7OP*/
+
 static void gpio_remove_key(struct gpio_button_data *bdata)
 {
 	free_irq(bdata->irq, bdata);
@@ -730,6 +746,14 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
 	}
 	input_sync(input);
 
+#ifndef VENDOR_EDIT
+	/*mingqiang.guo@phone.bsp  2014-5-14 delete for remove track gestures, reduce power consumption*/
+	/*OPPO yuyi 2014-04-02 add begin for adding lock for vol_button,delete for oneplus*/
+#ifndef CONFIG_OPPO_DEVICE_FIND7OP
+	wake_lock_init(&wake_lock_sensor, WAKE_LOCK_SUSPEND, "key_wakelock");
+#endif/*CONFIG_OPPO_DEVICE_FIND7OP*/
+#endif/*VENDOR_EDIT*/
+
 	device_init_wakeup(&pdev->dev, wakeup);
 
 	return 0;
@@ -774,12 +798,25 @@ static int __devexit gpio_keys_remove(struct platform_device *pdev)
 	if (!pdev->dev.platform_data)
 		kfree(ddata->data[0].button);
 
+#ifndef VENDOR_EDIT
+	/*mingqiang.guo@phone.bsp  2014-5-14 delete for remove track gestures, reduce power consumption*/
+	/*OPPO yuyi 2014-04-02 add begin for adding lock for vol_button,delete for oneplus*/
+#ifndef CONFIG_OPPO_DEVICE_FIND7OP
+	wake_lock_destroy(&wake_lock_sensor);
+#endif/*CONFIG_OPPO_DEVICE_FIND7OP*/
+#endif/*VENDOR_EDIT*/
+
 	kfree(ddata);
 
 	return 0;
 }
 
 #ifdef CONFIG_PM_SLEEP
+/*OPPO yuyi 2014-03-22 add begin for delay button_backlight*/
+#ifdef VENDOR_EDIT
+int button_backlight = 0;
+#endif
+/*OPPO yuyi 2014-03-22 add end for delay button_backlight*/
 static int gpio_keys_suspend(struct device *dev)
 {
 	struct gpio_keys_drvdata *ddata = dev_get_drvdata(dev);
@@ -792,7 +829,11 @@ static int gpio_keys_suspend(struct device *dev)
 				enable_irq_wake(bdata->irq);
 		}
 	}
-
+/*OPPO yuyi 2014-03-22 add begin for delay button_backlight*/
+#ifdef VENDOR_EDIT
+	button_backlight = 0;
+#endif
+/*OPPO yuyi 2014-03-22 add end for delay button_backlight*/
 	return 0;
 }
 
@@ -810,6 +851,17 @@ static int gpio_keys_resume(struct device *dev)
 			gpio_keys_gpio_report_event(bdata);
 	}
 	input_sync(ddata->input);
+
+#ifndef VENDOR_EDIT 
+	/*mingqiang.guo@phone.bsp  2014-5-14 delete for remove track gestures, reduce power consumption*/
+	/*OPPO yuyi 2014-03-22 add begin for delay button_backlight*/
+	button_backlight = 1;
+	/*OPPO yuyi 2014-04-02 add begin for adding lock for vol_button,delete for oneplus*/
+#ifndef CONFIG_OPPO_DEVICE_FIND7OP
+	wake_lock_timeout(&wake_lock_sensor, 3*HZ);
+#endif/*CONFIG_OPPO_DEVICE_FIND7OP*/
+#endif/*VENDOR_EDIT*/
+
 
 	return 0;
 }

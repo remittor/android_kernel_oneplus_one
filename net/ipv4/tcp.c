@@ -1119,9 +1119,17 @@ out:
 	if (copied)
 		tcp_push(sk, flags, mss_now, tp->nonagle);
 	release_sock(sk);
-
+#ifndef CONFIG_VENDOR_EDIT
+/* wenxian.zhen@Onlinerd.Driver, 2014/05/06  Add for stactist the data both receive and send  of the progress  */
 	if (copied > 0)
 		uid_stat_tcp_snd(current_uid(), copied);
+#else
+	if (copied > 0)
+		{
+		uid_stat_tcp_snd(current_uid(), copied);
+		pid_stat_tcp_snd(task_tgid_vnr(current), copied);
+		}
+#endif /*CONFIG_VENDOR_EDIT*/
 	return copied;
 
 do_fault:
@@ -1396,9 +1404,14 @@ int tcp_read_sock(struct sock *sk, read_descriptor_t *desc,
 	tcp_rcv_space_adjust(sk);
 
 	/* Clean up data we have read: This will do ACK frames. */
+	
 	if (copied > 0) {
 		tcp_cleanup_rbuf(sk, copied);
 		uid_stat_tcp_rcv(current_uid(), copied);
+#ifdef CONFIG_VENDOR_EDIT
+/* wenxian.zhen@Onlinerd.Driver, 2014/05/06  Add for stactist the data both receive and send  of the progress  */
+		pid_stat_tcp_rcv(task_tgid_vnr(current), copied);		
+#endif /*CONFIG_VENDOR_EDIT*/
 	}
 
 	return copied;
@@ -1784,8 +1797,19 @@ skip_copy:
 
 	release_sock(sk);
 
+#ifndef CONFIG_VENDOR_EDIT
+/* wenxian.zhen@Onlinerd.Driver, 2014/05/06  Add for stactist the data both receive and send  of the progress  */
 	if (copied > 0)
 		uid_stat_tcp_rcv(current_uid(), copied);
+#else
+
+	if (copied > 0)
+		{
+		uid_stat_tcp_rcv(current_uid(), copied);
+		pid_stat_tcp_rcv(task_tgid_vnr(current), copied);	
+		}
+#endif /*CONFIG_VENDOR_EDIT*/
+
 	return copied;
 
 out:
@@ -1794,8 +1818,17 @@ out:
 
 recv_urg:
 	err = tcp_recv_urg(sk, msg, len, flags);
+#ifndef CONFIG_VENDOR_EDIT
+/* wenxian.zhen@Onlinerd.Driver, 2014/05/06  Add for stactist the data both receive and send  of the progress  */
 	if (err > 0)
 		uid_stat_tcp_rcv(current_uid(), err);
+#else
+	if (err > 0)
+		{
+		uid_stat_tcp_rcv(current_uid(), err);
+		pid_stat_tcp_rcv(task_tgid_vnr(current), copied);		
+		}
+#endif /*CONFIG_VENDOR_EDIT*/
 	goto out;
 }
 EXPORT_SYMBOL(tcp_recvmsg);
